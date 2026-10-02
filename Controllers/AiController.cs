@@ -32,7 +32,7 @@ namespace Labb3MeetingAssistant.Controllers
         public async Task<IActionResult> Agenda(AgendaRequest request)
         {
             var result = await _aiService.AgendaAsync(request);
-            return Ok($"Agenda: {result}");
+            return Ok(new AiResponse { Result = result });
         }
         
     }

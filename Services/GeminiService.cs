@@ -24,13 +24,32 @@ namespace Labb3MeetingAssistant.Services
         }
         public async Task<string> SummarizeAsync(SummarizeRequest request)
         {
-            var prompt = $"Summarize following meeting audio... \n\n{request.Notes}";
+            var internalAttendee = FormatPerson(request.InternalAttendees);
+            var prompt = $"Summarize following meeting notes and pair it with following attendees with their assigned roles: \n\n{request.Notes} {internalAttendee} {request.ExternalAttendees}. Don't invent any information that isn't provided above";
             return await SendPromptAsync(prompt);
         }
 
         public async Task<string> AgendaAsync(AgendaRequest request)
         {
-            throw new NotImplementedException();
+            var points = string.Join("\n", request.Points.Select((p, i) => $"{i + 1}. {p}"));
+            var prompt = $"Create a meeting agenda with estimated time allocations based on the following points:\n{points}. Don't invent any information that isn't provided above.";
+            return await SendPromptAsync(prompt);
+        }
+        public async Task<string> InvitationAsync(InvitationRequest request)
+        {
+            var host = FormatPerson(request.Host);
+            var guests = string.Join(", ", request.Guests.Select(FormatPerson));
+            var prompt = $"""
+                Write a short and professional meeting invitation in English, if there's multiple words in another language then translate it to english.
+                Title: {request.Title}
+                Host: {host}
+                Guests: {guests}
+                Location: {request.Place}
+                Time: {request.Time.ToString("dddd d MMMM HH:mm", new CultureInfo("en-US"))}
+                Don't invent any information that isn't provided above.
+                """;
+
+            return await SendPromptAsync(prompt);
         }
         private async Task<string> SendPromptAsync(string prompt)
         {
@@ -71,22 +90,6 @@ namespace Labb3MeetingAssistant.Services
             return Staff.Positions.TryGetValue(name, out var role)
                 ? $"{name} ({role})"
                 : name;
-        }
-        public async Task<string> InvitationAsync(InvitationRequest request)
-        {
-            var host = FormatPerson(request.Host);
-            var guests = string.Join(", ", request.Guests.Select(FormatPerson));
-            var prompt = $"""
-                Write a short and professional meeting invitation in English, if there's multiple words in another language then translate it to english.
-                Title: {request.Title}
-                Host: {host}
-                Guests: {guests}
-                Location: {request.Place}
-                Time: {request.Time.ToString("dddd d MMMM HH:mm", new CultureInfo("en-US"))}
-                Don't invent any information that isn't provided above.
-                """;
-
-            return await SendPromptAsync(prompt);
         }
     }
 }
