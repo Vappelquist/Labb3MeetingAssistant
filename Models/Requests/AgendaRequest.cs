@@ -6,6 +6,6 @@ namespace Labb3MeetingAssistant.Models.Requests
     {
         [Required]
         [MaxLength(1000)]
-        public string Notes { get; set; } = string.Empty;
+        public Dictionary<string, double> Points { get; set; } = new Dictionary<string, double>();
     }
 }
