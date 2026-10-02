@@ -8,7 +8,7 @@ namespace Labb3MeetingAssistant.Models.Requests
         [MaxLength(10000)]
         public string Notes { get; set; } = string.Empty;
         [Required]
-        public string InternalAttendees { get; set; }
-        public string ExternalAttendees { get; set; }
+        public List<string> InternalAttendees { get; set; } = new();
+        public List<string> ExternalAttendees { get; set; } = new();
     }
 }
