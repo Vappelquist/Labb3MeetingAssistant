@@ -1,8 +1,6 @@
 ﻿using Labb3MeetingAssistant.Data;
 using Labb3MeetingAssistant.Models.Requests;
-using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace Labb3MeetingAssistant.Services
@@ -24,15 +22,32 @@ namespace Labb3MeetingAssistant.Services
         }
         public async Task<string> SummarizeAsync(SummarizeRequest request)
         {
-            var internalAttendee = FormatPerson(request.InternalAttendees);
-            var prompt = $"Summarize following meeting notes and pair it with following attendees with their assigned roles: \n\n{request.Notes} {internalAttendee} {request.ExternalAttendees}. Don't invent any information that isn't provided above";
+            var internalAttendees = string.Join(", ", request.InternalAttendees.Select(FormatPerson));
+            var externalAttendees = string.Join(", ", request.ExternalAttendees);
+
+            var prompt = $"""
+        Summarize the following meeting notes and mention the attendees with their roles.
+        Internal attendees: {internalAttendees}
+        External attendees: {externalAttendees}
+        Notes:
+        {request.Notes}
+        Don't invent any information that isn't provided above.
+        """;
+
             return await SendPromptAsync(prompt);
         }
 
         public async Task<string> AgendaAsync(AgendaRequest request)
         {
-            var points = string.Join("\n", request.Points.Select((p, i) => $"{i + 1}. {p}"));
-            var prompt = $"Create a meeting agenda with estimated time allocations based on the following points:\n{points}. Don't invent any information that isn't provided above.";
+            var points = string.Join("\n",
+                request.Points.Select((p, i) => $"{i + 1}. {p.Key} ({p.Value} hours)"));
+
+            var prompt = $"""
+        Create a meeting agenda based on the following points and their time allocations in hours:
+        {points}
+        Don't invent any information that isn't provided above.
+        """;
+
             return await SendPromptAsync(prompt);
         }
         public async Task<string> InvitationAsync(InvitationRequest request)
